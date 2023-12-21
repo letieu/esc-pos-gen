@@ -1,6 +1,6 @@
-async function loadHtml(url, token) {
+async function loadHtml(url, method = 'GET', token = '') {
   const response = await fetch(url, {
-    method: 'POST',
+    method,
     headers: {
       'Content-type': 'application/json; charset=UTF-8',
       'Authorization': 'Bearer ' + token

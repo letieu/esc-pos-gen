@@ -4,9 +4,8 @@ async function optimizeImage(image) {
   const jimpImage = await jimp.read(image);
 
   return await jimpImage
-    .resize(576, jimp.AUTO)
     .greyscale()
-    .getBufferAsync(jimp.MIME_JPEG);
+    .getBufferAsync(jimp.MIME_PNG);
 }
 
 module.exports = {
