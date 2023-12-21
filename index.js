@@ -10,14 +10,14 @@ app.use(express.json());
 
 app.get('/esc', async (req, res) => {
   try {
-    const { url, token } = req.query;
+    const { url, token, method, width } = req.query;
 
     if (!url) {
       return res.status(400).json({ error: 'Please provide HTML content.' });
     }
 
-    const html = await loadHtml(url, token);
-    const image = await htmlToImage(html, 'body > .container');
+    const html = await loadHtml(url, method, token);
+    const image = await htmlToImage(html, 'body > .container', width);
 
     const imageBase64 = `data:image/png;base64,${image.toString('base64')}`
     const command = await createEscCodeFromImage(imageBase64);
@@ -31,14 +31,14 @@ app.get('/esc', async (req, res) => {
 
 app.get('/image', async (req, res) => {
   try {
-    const { url, token, method } = req.query;
+    const { url, token, method, width } = req.query;
 
     if (!url) {
       return res.status(400).json({ error: 'Please provide HTML content.' });
     }
 
     const html = await loadHtml(url, method, token);
-    const image = await htmlToImage(html, 'body > .container');
+    const image = await htmlToImage(html, 'body > .container', width);
 
     res.set('Content-Type', 'image/png');
     res.status(200).send(image);
