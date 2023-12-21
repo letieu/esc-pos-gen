@@ -5,6 +5,9 @@ async function htmlToImage(html, selector = 'body') {
     selector: selector,
     transparent: false,
     html: html,
+    puppeteerArgs: {
+      args: ['--no-sandbox'],
+    },
   })
 }
 
