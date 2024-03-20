@@ -1,4 +1,4 @@
-async function loadHtml(url, method = 'GET', token = '') {
+async function loadHtmlFromUrl(url, method = 'GET', token = '') {
   const response = await fetch(url, {
     method,
     headers: {
@@ -11,5 +11,5 @@ async function loadHtml(url, method = 'GET', token = '') {
 }
 
 module.exports = {
-  loadHtml
+  loadHtmlFromUrl
 }

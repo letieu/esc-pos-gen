@@ -1,5 +1,5 @@
 const express = require('express');
-const { loadHtml } = require('./helpers/network');
+const { loadHtmlFromUrl: loadHtml } = require('./helpers/network');
 const { htmlToImage } = require('./helpers/html-to-image');
 const { createEscCodeFromImage, createEscCodeTest } = require('./helpers/printer');
 
@@ -13,7 +13,7 @@ app.get('/esc', async (req, res) => {
     const { url, token, method, width } = req.query;
 
     if (!url) {
-      return res.status(400).json({ error: 'Please provide HTML content.' });
+      return res.status(400).json({ error: 'Please provide url.' });
     }
 
     const html = await loadHtml(url, method, token);
@@ -31,14 +31,16 @@ app.get('/esc', async (req, res) => {
 
 app.get('/image', async (req, res) => {
   try {
-    const { url, token, method, width } = req.query;
+    const { url, html, token, method, width, selector } = req.query;
 
-    if (!url) {
-      return res.status(400).json({ error: 'Please provide HTML content.' });
+    if (!url && !html) {
+      return res.status(400).json({ error: 'Please provide URL or HTML.' });
     }
 
-    const html = await loadHtml(url, method, token);
-    const image = await htmlToImage(html, 'body > .container', width);
+    const htmlContent = html || await loadHtml(url, method, token);
+
+    const imageSelector = selector || 'body';
+    const image = await htmlToImage(htmlContent, imageSelector, width);
 
     res.set('Content-Type', 'image/png');
     res.status(200).send(image);
