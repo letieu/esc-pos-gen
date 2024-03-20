@@ -43,7 +43,8 @@ app.post('/image', async (req, res) => {
     const image = await htmlToImage(htmlContent, imageSelector, width, type);
 
     if (type === 'base64') {
-      res.status(200).json({ image });
+      const base64 = `data:image/png;base64,${image.toString('base64')}`;
+      res.status(200).send(base64);
     } else {
       res.set('Content-Type', `image/${type}`);
       res.status(200).send(image);
