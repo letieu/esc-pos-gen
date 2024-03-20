@@ -29,9 +29,9 @@ app.get('/esc', async (req, res) => {
   }
 });
 
-app.get('/image', async (req, res) => {
+app.post('/image', async (req, res) => {
   try {
-    const { url, html, token, method, width, selector } = req.query;
+    const { url, html, token, method, width, selector, type } = req.body;
 
     if (!url && !html) {
       return res.status(400).json({ error: 'Please provide URL or HTML.' });
@@ -39,11 +39,15 @@ app.get('/image', async (req, res) => {
 
     const htmlContent = html || await loadHtml(url, method, token);
 
-    const imageSelector = selector || 'body';
-    const image = await htmlToImage(htmlContent, imageSelector, width);
+    const imageSelector = selector || 'html';
+    const image = await htmlToImage(htmlContent, imageSelector, width, type);
 
-    res.set('Content-Type', 'image/png');
-    res.status(200).send(image);
+    if (type === 'base64') {
+      res.status(200).json({ image });
+    } else {
+      res.set('Content-Type', `image/${type}`);
+      res.status(200).send(image);
+    }
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Something went wrong.' });
