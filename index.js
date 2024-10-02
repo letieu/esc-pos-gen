@@ -1,72 +1,48 @@
-const express = require('express');
-const { loadHtmlFromUrl: loadHtml } = require('./helpers/network');
-const { htmlToImage } = require('./helpers/html-to-image');
-const { createEscCodeFromImage, createEscCodeTest } = require('./helpers/printer');
+const express = require("express");
+const { loadHtmlFromUrl: loadHtml } = require("./helpers/network");
+const { htmlToImage } = require("./helpers/html-to-image");
+const { createInvoiceImage } = require("./helpers/invoice");
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
 
-app.get('/esc', async (req, res) => {
-  try {
-    const { url, token, method, width } = req.query;
-
-    if (!url) {
-      return res.status(400).json({ error: 'Please provide url.' });
-    }
-
-    const html = await loadHtml(url, method, token);
-    const image = await htmlToImage(html, 'body > .container', width);
-
-    const imageBase64 = `data:image/png;base64,${image.toString('base64')}`
-    const command = await createEscCodeFromImage(imageBase64);
-
-    res.status(200).json(command.toJSON().data);
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: 'Something went wrong.' });
-  }
-});
-
-app.post('/image', async (req, res) => {
+app.post("/image", async (req, res) => {
   try {
     const { url, html, token, method, width, selector, type } = req.body;
 
     if (!url && !html) {
-      return res.status(400).json({ error: 'Please provide URL or HTML.' });
+      return res.status(400).json({ error: "Please provide URL or HTML." });
     }
 
-    const htmlContent = html || await loadHtml(url, method, token);
+    const htmlContent = html || (await loadHtml(url, method, token));
 
-    const imageSelector = selector || 'html';
+    const imageSelector = selector || "html";
     const image = await htmlToImage(htmlContent, imageSelector, width, type);
 
-    if (type === 'base64') {
-      const base64 = `data:image/png;base64,${image.toString('base64')}`;
+    if (type === "base64") {
+      const base64 = `data:image/png;base64,${image.toString("base64")}`;
       res.status(200).send(base64);
     } else {
-      res.set('Content-Type', `image/${type}`);
+      res.set("Content-Type", `image/${type}`);
       res.status(200).send(image);
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Something went wrong.' });
+    res.status(500).json({ error: "Something went wrong." });
   }
 });
 
-app.get('/test', async (req, res) => {
-  res.sendFile(__dirname + '/bill-test.html');
-});
-
-app.get('/test-esc', async (req, res) => {
+app.post("/image/v2", async (req, res) => {
   try {
-    const command = await createEscCodeTest();
-
-    res.status(200).json(command.toJSON().data);
+    const { width } = req.body;
+    const image = createInvoiceImage();
+    const base64 = `data:image/png;base64,${image.toString("base64")}`;
+    res.status(200).send(base64);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: 'Something went wrong.' });
+    res.status(500).json({ error: "Something went wrong.", cause: error });
   }
 });
 
