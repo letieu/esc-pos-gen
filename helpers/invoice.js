@@ -1,50 +1,53 @@
-const { createCanvas } = require("canvas");
+const Jimp = require("jimp");
 
 function createInvoiceImage() {
-  const width = 800;
+  // Create a new image with white background
+  const width = 384;
   const height = 600;
-  const canvas = createCanvas(width, height);
-  const ctx = canvas.getContext("2d");
 
-  // Background color for the invoice
-  ctx.fillStyle = "#ffffff"; // White background
-  ctx.fillRect(0, 0, width, height);
+  const promise = new Promise((resolve, reject) => {
+    new Jimp(width, height, "#FFFFFF", async (err, image) => {
+      if (err) {
+        reject(err);
+      }
 
-  // Add Invoice Header
-  ctx.font = "30px Arial";
-  ctx.fillStyle = "#333";
-  ctx.fillText("Invoice", 50, 50);
+      // Load a font
+      const font = await Jimp.loadFont(Jimp.FONT_SANS_32_BLACK);
 
-  // Add company details
-  ctx.font = "20px Arial";
-  ctx.fillText("Company Name", 50, 100);
-  ctx.fillText("Address: 1234 Street", 50, 130);
-  ctx.fillText("Date: 2024-10-02", 50, 160);
+      // Add Invoice Title
+      image.print(font, 50, 50, "Invoice");
 
-  // Add table headers
-  ctx.font = "18px Arial";
-  ctx.fillText("Item", 50, 220);
-  ctx.fillText("Qty", 300, 220);
-  ctx.fillText("Price", 400, 220);
-  ctx.fillText("Total", 500, 220);
+      // Add Company Information
+      image.print(font, 50, 100, "Company Name");
+      image.print(font, 50, 140, "Address: 1234 Street");
+      image.print(font, 50, 180, "Date: 2024-10-02");
 
-  // Add table contents (sample)
-  ctx.fillText("Product A", 50, 260);
-  ctx.fillText("2", 300, 260);
-  ctx.fillText("$50", 400, 260);
-  ctx.fillText("$100", 500, 260);
+      // Add table header
+      image.print(font, 50, 240, "Item");
+      image.print(font, 300, 240, "Qty");
+      image.print(font, 400, 240, "Price");
+      image.print(font, 500, 240, "Total");
 
-  ctx.fillText("Product B", 50, 300);
-  ctx.fillText("1", 300, 300);
-  ctx.fillText("$75", 400, 300);
-  ctx.fillText("$75", 500, 300);
+      // Add table data
+      image.print(font, 50, 280, "Product A");
+      image.print(font, 300, 280, "2");
+      image.print(font, 400, 280, "$50");
+      image.print(font, 500, 280, "$100");
 
-  // Add total price
-  ctx.fillText("Total: $175", 500, 360);
+      image.print(font, 50, 320, "Product B");
+      image.print(font, 300, 320, "1");
+      image.print(font, 400, 320, "$75");
+      image.print(font, 500, 320, "$75");
 
-  // Save the image as PNG
-  const buffer = canvas.toBuffer("image/png");
-  return buffer;
+      // Add total
+      image.print(font, 500, 400, "Total: $175");
+
+      const buffer = await image.getBufferAsync(Jimp.MIME_PNG);
+      resolve(buffer);
+    });
+  });
+
+  return promise;
 }
 
 module.exports = {
