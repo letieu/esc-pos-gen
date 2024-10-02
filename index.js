@@ -1,5 +1,6 @@
 const express = require("express");
-const { createInvoiceImage } = require("./helpers/invoice");
+const { createInvoiceType1 } = require("./helpers/invoice-image");
+const { getInvoiceDetail } = require("./helpers/db");
 
 const app = express();
 const PORT = 3000;
@@ -8,9 +9,10 @@ app.use(express.json());
 
 app.post("/image", async (req, res) => {
   try {
-    const { width } = req.body;
-    const image = await createInvoiceImage();
-    const base64 = `data:image/png;base64,${image.toString("base64")}`;
+    const { width, orderId } = req.body;
+    const invoiceDetail = await getInvoiceDetail(orderId);
+    const invoiceImage = await createInvoiceType1(invoiceDetail, width);
+    const base64 = `data:image/png;base64,${invoiceImage.toString("base64")}`;
     res.status(200).send(base64);
   } catch (error) {
     console.log(error);
