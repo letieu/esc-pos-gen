@@ -15,6 +15,7 @@ const pool = mysql.createPool({
 });
 
 async function getInvoiceDetail(orderId) {
+  // TODO: load invoice detail from database
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.query(
