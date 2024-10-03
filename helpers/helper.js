@@ -37,7 +37,16 @@ function formatDate(date) {
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 }
 
+function numberFormat(number)
+{
+  return new Intl.NumberFormat('VN', { maximumSignificantDigits: 2 }).format(
+      number,
+  )
+}
+
+
 module.exports = {
   formatDate,
   SvgBuilder,
+  numberFormat,
 };

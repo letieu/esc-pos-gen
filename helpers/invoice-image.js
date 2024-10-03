@@ -1,5 +1,5 @@
 const Sharp = require("sharp");
-const { SvgBuilder, formatDate } = require("./helper");
+const { SvgBuilder, formatDate, numberFormat} = require("./helper");
 
 /**
  * @typedef {Object} InvoiceItem
@@ -7,6 +7,9 @@ const { SvgBuilder, formatDate } = require("./helper");
  *  @property {number} price - Đơn giá.
  *  @property {number} quantity - Số lượng.
  *  @property {number} total - Tổng tiền.
+ *  @property {number} userCost - Gía bán / nhập.
+ *  @property {number} retailCost - Gía bán.
+ *  @property {number} baseCost - Gía nhập.
  */
 
 /**
@@ -18,8 +21,9 @@ const { SvgBuilder, formatDate } = require("./helper");
  * @property {string} customer - Tên khách hàng.
  * @property {string} customerPhone - Số điện thoại của khách hàng.
  * @property {number} total - Tổng tiền hóa đơn.
- * @property {number} discount - Giảm giá (%)
- * @property {number} totalFinal - Tổng tiền thanh toán.
+ * @property {number} discount - Giảm giá (%/đ)
+ * @property {number} discountType - Loại giảm giá
+ * @property {number} orderPaymentPrice - Tổng tiền thanh toán.
  * @property {number} totalDebt - Tổng tiền nợ.
  * @property {string} companyPhone - Số điện thoại của cửa hàng.
  * @property {string} companyAddress - Địa chỉ của cửa hàng.
@@ -64,6 +68,10 @@ async function createInvoiceType1(invoice, width) {
   svgBuilder
     .addLine(
       (y) =>
+        `<text x="50%" y="${y}" text-anchor="middle" font-size="16" font-weight="bold">${invoice.barcode}</text>`,
+    )
+    .addLine(
+      (y) =>
         `<text x="50%" y="${y}" text-anchor="middle" font-size="16" font-weight="bold">Hóa đơn bán hàng</text>`,
     )
     .addLine(
@@ -106,9 +114,9 @@ async function createInvoiceType1(invoice, width) {
       svgBuilder.addLine(
         (y) =>
           `<text x="${alignLeft}" y="${y}" font-size="12">${item.name.slice(20)}</text>
-        <text x="${width * 0.44}" y="${y}" font-size="12">${item.price}</text>
+        <text x="${width * 0.44}" y="${y}" font-size="12">${numberFormat(item.userCost)}</text>
         <text x="${width * 0.63}" y="${y}" font-size="12">${item.quantity}</text>
-        <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${item.total}</text>`,
+        <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${item.orderType === 1 ? numberFormat(item.retailCost) : numberFormat(item.baseCost)}</text>`,
       );
     } else {
       svgBuilder.addLine(
@@ -129,53 +137,32 @@ async function createInvoiceType1(invoice, width) {
     .addLine(
       (y) =>
         `<text x="${alignLeft}" y="${y}" font-size="12">TỔNG GIÁ TRỊ HÓA ĐƠN</text>
-         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.total}</text>`,
+         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${numberFormat(invoice.total)}</text>`,
     )
     .addLine(
       (y) =>
         `<text x="${alignLeft}" y="${y}" font-size="12">GIẢM GIÁ</text>
-         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.discount}</text>`,
+         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.discount + invoice.discountType == 1 ? '%' : 'đ'}</text>`,
     )
 
     .addLine(
       (y) =>
-        `<text x="${alignLeft}" y="${y}" font-size="12">TỔNG TIỀN THANH TOÁN</text>
-         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.totalFinal}</text>`,
-    )
-    .addLine(
-      (y) =>
         `<text x="${alignLeft}" y="${y}" font-size="12">TỔNG TIỀN KHÁCH TRẢ</text>
-         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.totalPaid}</text>`,
+         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${numberFormat(invoice.orderPaymentPrice)}</text>`,
     )
     .addLine(
       (y) =>
         `<text x="${alignLeft}" y="${y}" font-size="12">TỔNG TIỀN NỢ</text>
-         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.totalDebt}</text>`,
+         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${numberFormat(invoice.total - invoice.orderPaymentPrice)}</text>`,
     )
     .addLine(
       (y) =>
         `<line x1="${alignLeft}" y1="${y}" x2="${alignRight}" y2="${y}" stroke="black" stroke-dasharray="5,5" />`,
-    )
-    .addLine(
-      (y) =>
-        `<text x="50%" y="${y}" text-anchor="middle" font-size="12">( Giá đã bao gồm thuế GTGT )</text>`,
     )
     .addLine(
       (y) =>
         `<text x="${alignLeft}" y="${y}" font-size="12">Số tham chiếu</text>
          <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.invoiceNumber}</text>`,
-    )
-    .addLine(
-      (y) =>
-        `<line x1="${alignLeft}" y1="${y}" x2="${alignRight}" y2="${y}" stroke="black" stroke-dasharray="5,5" />`,
-    )
-    .addLine(
-      (y) =>
-        `<text x="50%" y="${y}" text-anchor="middle" font-size="12">Chỉ xuất hóa đơn trong ngày</text>`,
-    )
-    .addLine(
-      (y) =>
-        `<text x="50%" y="${y}" text-anchor="middle" font-size="12">Tax Invoice will be issued within same day</text>`,
     )
     .addLine(
       (y) =>
@@ -200,7 +187,13 @@ async function createInvoiceType1(invoice, width) {
     .addLine(
       (y) =>
         `<text x="50%" y="${y}" text-anchor="middle" font-size="14">CẢM ƠN QUÝ KHÁCH VÀ HẸN GẶP LẠI</text>`,
+    )
+
+    .addLine(
+        (y) =>
+            `<text x="50%" y="${y}" text-anchor="middle" font-size="12"></text>`,
     );
+
 
   const svg = svgBuilder.getSvg();
   const image = await Sharp(Buffer.from(svg)).png().toBuffer();
