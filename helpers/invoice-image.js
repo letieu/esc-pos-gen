@@ -50,10 +50,11 @@ async function createInvoiceType1(invoice, width) {
   //const svgBuilder = new SvgBuilder(width, "Arial, sans-serif");
   const svgBuilder = new SvgBuilder(width, "Times New Roman");
 
+  const logoWidth = width * 0.2;
+  const logoHeight = logoWidth;
+  const logoX = width / 2 - logoWidth / 2;
   if (invoice.logo) {
-    const logoWidth = width * 0.2;
-    const logoHeight = logoWidth;
-    const logoX = width / 2 - logoWidth / 2;
+
     svgBuilder.addLine(
       (y) =>
         `<image x="${logoX}" y="${y}" width="${logoWidth}" height="${logoHeight}" href="data:image/png;base64,${invoice.logo}" />`,
@@ -67,9 +68,14 @@ async function createInvoiceType1(invoice, width) {
 
   svgBuilder
     .addLine(
-      (y) =>
-        `<text x="50%" y="${y}" text-anchor="middle" font-size="16" font-weight="bold">${invoice.barcode}</text>`,
+        (y) =>
+            `<image x="${logoX}" y="${y}" width="${logoWidth}" height="${logoHeight}" href="data:image/png;base64,${invoice.bankQr}" />`,
     )
+    .addLine((y) => `<line x="0" y="${y}"></line>`)
+    .addLine((y) => `<line x="0" y="${y}"></line>`)
+    .addLine((y) => `<line x="0" y="${y}"></line>`)
+    .addLine((y) => `<line x="0" y="${y}"></line>`)
+    .addLine((y) => `<line x="0" y="${y}"></line>`)
     .addLine(
       (y) =>
         `<text x="50%" y="${y}" text-anchor="middle" font-size="16" font-weight="bold">Hóa đơn bán hàng</text>`,
@@ -100,8 +106,8 @@ async function createInvoiceType1(invoice, width) {
     .addLine(
       (y) =>
         `<text x="${alignLeft}" y="${y}" font-size="14">Mặt hàng</text>
-         <text x="${width * 0.44}" y="${y}" font-size="14">Đơn giá</text>
-         <text x="${width * 0.63}" y="${y}" font-size="14">Sl</text>
+         <text x="${width * 0.5}" y="${y}" font-size="14">Đơn giá</text>
+         <text x="${width * 0.7}" y="${y}" font-size="14">Sl</text>
          <text x="${alignRight}" y="${y}" font-size="14" text-anchor="end">T.Tiền</text>`,
     );
 
@@ -114,16 +120,16 @@ async function createInvoiceType1(invoice, width) {
       svgBuilder.addLine(
         (y) =>
           `<text x="${alignLeft}" y="${y}" font-size="12">${item.name.slice(20)}</text>
-        <text x="${width * 0.44}" y="${y}" font-size="12">${numberFormat(item.userCost)}</text>
-        <text x="${width * 0.63}" y="${y}" font-size="12">${item.quantity}</text>
+        <text x="${width * 0.5}" y="${y}" font-size="12">${numberFormat(item.userCost)}</text>
+        <text x="${width * 0.7}" y="${y}" font-size="12">${item.quantity}</text>
         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${item.orderType === 1 ? numberFormat(item.retailCost) : numberFormat(item.baseCost)}</text>`,
       );
     } else {
       svgBuilder.addLine(
         (y) =>
           `<text x="${alignLeft}" y="${y}" font-size="12">${item.name}</text>
-        <text x="${width * 0.44}" y="${y}" font-size="12">${item.price}</text>
-        <text x="${width * 0.63}" y="${y}" font-size="12">${item.quantity}</text>
+        <text x="${width * 0.5}" y="${y}" font-size="12">${item.price}</text>
+        <text x="${width * 0.7}" y="${y}" font-size="12">${item.quantity}</text>
         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${item.total}</text>`,
       );
     }
@@ -142,17 +148,17 @@ async function createInvoiceType1(invoice, width) {
     .addLine(
       (y) =>
         `<text x="${alignLeft}" y="${y}" font-size="12">GIẢM GIÁ</text>
-         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.discount + invoice.discountType == 1 ? "%" : "đ"}</text>`,
+         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.discount} ${invoice.discountType === 1 ? "%" : "đ"}</text>`,
     )
 
     .addLine(
       (y) =>
-        `<text x="${alignLeft}" y="${y}" font-size="12">TỔNG TIỀN KHÁCH TRẢ</text>
+        `<text x="${alignLeft}" y="${y}" font-size="12">ĐÃ THANH TOÁN</text>
          <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${numberFormat(invoice.orderPaymentPrice)}</text>`,
     )
     .addLine(
       (y) =>
-        `<text x="${alignLeft}" y="${y}" font-size="12">TỔNG TIỀN NỢ</text>
+        `<text x="${alignLeft}" y="${y}" font-size="12">CÔNG NỢ</text>
          <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${numberFormat(invoice.total - invoice.orderPaymentPrice)}</text>`,
     )
     .addLine(
