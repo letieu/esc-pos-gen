@@ -32,7 +32,7 @@ async function getInvoice(invoiceDetail, employee, bank) {
     companyWebsite: employee.website,
     logo: employee.logo,
 
-    bankQr: bank.qr, // TODO:
+    bankQr: "",
     bankAccount: bank.account_no,
     bankName: bank.name,
 
