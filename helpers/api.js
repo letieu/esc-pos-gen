@@ -23,10 +23,6 @@ async function getBankQr(acqId, accountNo, total, orderCode) {
   return image.toString("base64");
 }
 
-getBankQr("1", "123456789", 100000, "123456").then((data) => {
-  console.log(data);
-});
-
 module.exports = {
   getBankQr,
 };
