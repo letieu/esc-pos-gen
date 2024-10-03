@@ -42,7 +42,9 @@ const { SvgBuilder, formatDate } = require("./helper");
 async function createInvoiceType1(invoice, width) {
   const alignLeft = width * 0.02;
   const alignRight = width * 0.98;
-  const svgBuilder = new SvgBuilder(width);
+
+  //const svgBuilder = new SvgBuilder(width, "Arial, sans-serif");
+  const svgBuilder = new SvgBuilder(width, "Times New Roman");
 
   if (invoice.logo) {
     const logoWidth = width * 0.2;

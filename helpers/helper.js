@@ -1,8 +1,9 @@
 class SvgBuilder {
-  constructor(width) {
+  constructor(width, fontFamily = "Arial, sans-serif") {
     this.width = width;
     this.lineSpacing = 20;
     this.lines = [];
+    this.fontFamily = fontFamily;
   }
 
   /**
@@ -18,7 +19,7 @@ class SvgBuilder {
   getSvg() {
     const height = this.lines.length * this.lineSpacing;
     const svg = `
-      <svg xmlns="http://www.w3.org/2000/svg" width="${this.width}" height="${height}" style="font-family: Arial, sans-serif;">
+      <svg xmlns="http://www.w3.org/2000/svg" width="${this.width}" height="${height}" style="font-family: ${this.fontFamily}">
         ${this.lines.join("")}
       </svg>
     `;
@@ -36,8 +37,7 @@ function formatDate(date) {
   return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`;
 }
 
-
 module.exports = {
   formatDate,
-  SvgBuilder
-}
+  SvgBuilder,
+};
