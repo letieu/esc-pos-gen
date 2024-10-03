@@ -1,7 +1,5 @@
 const mysql = require("mysql2/promise");
 const dotenv = require("dotenv");
-const {SvgBuilder} = require("./helper");
-
 
 dotenv.config();
 
@@ -17,7 +15,6 @@ const pool = mysql.createPool({
 });
 
 async function getInvoiceDetail(orderId) {
-  // TODO: load invoice detail from database
   const connection = await pool.getConnection();
   try {
     const [rows] = await connection.query(
@@ -43,11 +40,11 @@ async function getInvoiceDetail(orderId) {
         "order_detail.variant_id as variant_id, " +
         "(select sum(price) from order_payment where order_payment.order_id = od.id) as order_payment_price, " +
         "(select sum(price) from order_service_fee where order_service_fee.order_id = od.id) as order_service_fee " +
-        "FROM \`order\` as od" +
-      " LEFT JOIN order_detail on od.id = order_detail.order_id" +
-      " LEFT JOIN variant on order_detail.variant_id = variant.id" +
-      " LEFT JOIN users on od.user_id = users.id" +
-      " where od.id = ?",
+        "FROM `order` as od" +
+        " LEFT JOIN order_detail on od.id = order_detail.order_id" +
+        " LEFT JOIN variant on order_detail.variant_id = variant.id" +
+        " LEFT JOIN users on od.user_id = users.id" +
+        " where od.id = ?",
       [orderId],
     );
     return rows;
@@ -57,59 +54,45 @@ async function getInvoiceDetail(orderId) {
 }
 
 async function getInfoEmployee(userId, userType) {
-  // TODO: load invoice detail from database
   const connection = await pool.getConnection();
   try {
     // if (userType === 2) {
-      const [rows] = await connection.query(
-          "SELECT * FROM \`config\` WHERE user_id = ? limit 1",
-          [userId],
-      );
+    const [rows] = await connection.query(
+      "SELECT * FROM `config` WHERE user_id = ? limit 1",
+      [userId],
+    );
 
-    return rows;
+    if (rows.length === 0) {
+      throw new Error("Không tìm thấy người dùng");
+    }
+
+    return rows[0];
   } finally {
     connection.release();
   }
 }
 
-async function getInfoGetQr(userId, userType, total, orderCode) {
-  // TODO: load invoice detail from database
+async function getBankInfo(userId, userType) {
   const connection = await pool.getConnection();
+
   try {
-    // if (userType === 2) {
-      const [rows] = await connection.query(
-          "SELECT * FROM \`account_bank\` WHERE user_id = ? limit 1",
-          [userId],
-      );
+    const [rows] = await connection.query(
+      "SELECT * FROM `account_bank` WHERE user_id = ? limit 1",
+      [userId],
+    );
 
-      if (rows.length > 0) {
-        console.log(rows);
-        console.log(process.env.API_QR + "/generate-qr");
-        const response = await fetch(process.env.API_QR + "/generate-qr", {
-          headers: {
-            "Content-type": "application/json; charset=UTF-8"
-          },
-          method: "POST",
-          body: {
-            acq_id: rows[0].acq_id,
-            account_no: rows[0].account_no,
-            total: total,
-            description: "TT don hang " + orderCode
-          }
-        });
-        console.log(response.body);
-      }
+    if (rows.length === 0) {
+      throw new Error("Không tìm thấy thông tin ngân hàng");
+    }
 
-    // }
-    return rows;
+    return rows[0];
   } finally {
     connection.release();
   }
 }
-
 
 module.exports = {
   getInvoiceDetail,
   getInfoEmployee,
-  getInfoGetQr,
+  getBankInfo,
 };

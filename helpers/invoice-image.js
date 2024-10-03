@@ -1,5 +1,5 @@
 const Sharp = require("sharp");
-const { SvgBuilder, formatDate, numberFormat} = require("./helper");
+const { SvgBuilder, formatDate, numberFormat } = require("./helper");
 
 /**
  * @typedef {Object} InvoiceItem
@@ -142,7 +142,7 @@ async function createInvoiceType1(invoice, width) {
     .addLine(
       (y) =>
         `<text x="${alignLeft}" y="${y}" font-size="12">GIẢM GIÁ</text>
-         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.discount + invoice.discountType == 1 ? '%' : 'đ'}</text>`,
+         <text x="${alignRight}" y="${y}" font-size="12" text-anchor="end">${invoice.discount + invoice.discountType == 1 ? "%" : "đ"}</text>`,
     )
 
     .addLine(
@@ -190,10 +190,9 @@ async function createInvoiceType1(invoice, width) {
     )
 
     .addLine(
-        (y) =>
-            `<text x="50%" y="${y}" text-anchor="middle" font-size="12"></text>`,
+      (y) =>
+        `<text x="50%" y="${y}" text-anchor="middle" font-size="12"></text>`,
     );
-
 
   const svg = svgBuilder.getSvg();
   const image = await Sharp(Buffer.from(svg)).png().toBuffer();
