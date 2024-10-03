@@ -1,5 +1,10 @@
 # ESC/POS Commands generator from html link
 
+## Run dev
+```bash
+docker compose up
+```
+
 ## Usage
 
 ```bash
