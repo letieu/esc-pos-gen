@@ -17,8 +17,10 @@ app.post("/image", async (req, res) => {
       res.status(422).json({ error: "orderId not exist" });
     }
     const userId = invoiceDetail[0].user_id;
-    const employee = await DB.getInfoEmployee(userId, userType);
-    const bank = await DB.getBankInfo(userId, userType);
+    const [employee, bank] = await Promise.all([
+      DB.getInfoEmployee(userId, userType),
+      DB.getBankInfo(userId, userType),
+    ]);
 
     const mapped = await Mapping.getInvoice(invoiceDetail, employee, bank);
     const invoiceImage = await createInvoiceType1(mapped, width);
